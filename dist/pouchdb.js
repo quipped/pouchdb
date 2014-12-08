@@ -3423,7 +3423,7 @@ IdbPouch.Changes = new utils.Changes();
 module.exports = IdbPouch;
 
 }).call(this,_dereq_('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../deps/errors":12,"../merge":20,"../utils":25,"_process":34,"vuvuzela":67}],4:[function(_dereq_,module,exports){
+},{"../deps/errors":12,"../merge":20,"../utils":25,"_process":34,"vuvuzela":89}],4:[function(_dereq_,module,exports){
 module.exports = ['idb', 'websql'];
 },{}],5:[function(_dereq_,module,exports){
 (function (global){
@@ -4538,6 +4538,11 @@ function WebSqlPouch(opts, callback) {
       var criteria = [
         DOC_STORE + '.winningseq > ' + opts.since
       ];
+
+      if (opts["quio_model"]) {
+        criteria.push(DOC_STORE + ".id LIKE '" + opts["quio_model"] + "_%'");
+      }
+
       var sqlArgs = [];
       if (opts.doc_ids) {
         criteria.push(DOC_STORE + '.id IN (' + opts.doc_ids.map(function () {
@@ -4558,6 +4563,7 @@ function WebSqlPouch(opts, callback) {
 
       var lastSeq = 0;
       db.readTransaction(function (tx) {
+
         tx.executeSql(sql, sqlArgs, function (tx, result) {
           function reportChange(change) {
             return function () {
@@ -4842,7 +4848,7 @@ WebSqlPouch.Changes = new utils.Changes();
 module.exports = WebSqlPouch;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../deps/errors":12,"../deps/parse-hex":14,"../merge":20,"../utils":25,"vuvuzela":67}],6:[function(_dereq_,module,exports){
+},{"../deps/errors":12,"../deps/parse-hex":14,"../merge":20,"../utils":25,"vuvuzela":89}],6:[function(_dereq_,module,exports){
 'use strict';
 var utils = _dereq_('./utils');
 var merge = _dereq_('./merge');
@@ -5953,7 +5959,7 @@ module.exports = function (data, callback) {
 };
 
 }).call(this,_dereq_('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":34,"crypto":28,"spark-md5":66}],14:[function(_dereq_,module,exports){
+},{"_process":34,"crypto":28,"spark-md5":88}],14:[function(_dereq_,module,exports){
 'use strict';
 
 //
@@ -6755,12 +6761,89 @@ function replicate(repId, src, target, opts, returnValue, result) {
     }));
   }
 
+	function getSpecificDoc(docId) {
+
+		var allMissing = currentBatch.diffs[docId].missing;
+		var missingBatches = [ ];
+		for (var i = 0; i < allMissing.length; i += MAX_SIMULTANEOUS_REVS) {
+			missingBatches.push(allMissing.slice(i,
+				Math.min(allMissing.length, i + MAX_SIMULTANEOUS_REVS)
+			));
+		}
+
+		return utils.Promise.all(missingBatches.map(function (missing) {
+			return new utils.Promise(function (resolve, reject) {
+				src.get( docId, { revs: true, open_revs: missing } ).then( function( docs ){
+					docs.forEach( function( doc ){
+						if( state.cancelled ){ 
+							return completeReplication( );
+						}
+
+						if( doc.ok ){
+
+							var docDone = function( doc ){
+								result.docs_read++;
+								currentBatch.pendingRevs++;
+								currentBatch.docs.push( doc );
+								resolve( );
+							}
+
+
+							// Check to see if the document has attachments; If it does, query them directly so we end up
+							// with a blob.
+							if( !doc.ok._attachments ){
+								return docDone( doc.ok );
+							}
+
+							// Get the attachments in the doc..
+							var _promises = [ ];
+							Object.keys( doc.ok._attachments ).forEach( function( attachmentName ){
+
+								_promises.push( new utils.Promise( function( resolve, reject ){
+
+									src.getAttachment( doc.ok._id, attachmentName, function( err, attachmentBlob ){
+										if( err ){ return reject( err ); }
+										
+										doc.ok._attachments[attachmentName].data = attachmentBlob;
+										delete doc.ok._attachments[attachmentName].stub;
+
+										return resolve( );
+									} );
+								} ) );
+
+							} );
+
+							utils.Promise.all( _promises ).then( function( ){
+								return docDone( doc.ok );
+							}, function( err ){
+								return reject( err );
+							} );
+						}else{
+							// Some error; Not good.
+							return reject( doc );
+						}
+					} );
+					delete currentBatch.diffs[docId];
+				} );
+			} );
+		} ) );
+	}
+
+  
   function getAllDocs() {
+    var _promises = [ ];
+    Object.keys( currentBatch.diffs ).forEach( function( diffId ){
+      _promises.push( getSpecificDoc( diffId ) );
+    } );
+    return utils.Promise.all( _promises );
+
+    /*
     if (Object.keys(currentBatch.diffs).length > 0) {
       return getNextDoc().then(getAllDocs);
     } else {
       return utils.Promise.resolve();
     }
+    */
   }
 
 
@@ -6771,6 +6854,7 @@ function replicate(repId, src, target, opts, returnValue, result) {
       var missing = currentBatch.diffs[id].missing;
       return missing.length === 1 && missing[0].slice(0, 2) === '1-';
     });
+
     return src.allDocs({
       keys: ids,
       include_docs: true
@@ -6851,6 +6935,7 @@ function replicate(repId, src, target, opts, returnValue, result) {
       return;
     }
     currentBatch = batches.shift();
+
     getDiffs()
     .then(getDocs)
     .then(writeDocs)
@@ -6861,6 +6946,24 @@ function replicate(repId, src, target, opts, returnValue, result) {
     });
   }
 
+  function debounce(func, wait, immediate) {
+		var timeout;
+		return function() {
+			var context = this, args = arguments;
+			var later = function() {
+				timeout = null;
+				if (!immediate) func.apply(context, args);
+			};
+			var callNow = immediate && !timeout;
+			clearTimeout(timeout);
+			timeout = setTimeout(later, wait);
+			if (callNow) func.apply(context, args);
+		};
+  };
+
+  var reallyStartNextBatch = debounce( function( ){
+    startNextBatch( );
+  }, 10 );
 
   function processPendingBatch(immediate) {
     if (pendingBatch.changes.length === 0) {
@@ -6885,7 +6988,9 @@ function replicate(repId, src, target, opts, returnValue, result) {
         changes: [],
         docs: []
       };
-      startNextBatch();
+
+      reallyStartNextBatch( );
+      //startNextBatch();
     }
   }
 
@@ -8788,7 +8893,7 @@ function base64Write (buf, string, offset, length) {
 }
 
 function utf16leWrite (buf, string, offset, length) {
-  var charsWritten = blitBuffer(utf16leToBytes(string), buf, offset, length)
+  var charsWritten = blitBuffer(utf16leToBytes(string), buf, offset, length, 2)
   return charsWritten
 }
 
@@ -9472,7 +9577,8 @@ function base64ToBytes (str) {
   return base64.toByteArray(str)
 }
 
-function blitBuffer (src, dst, offset, length) {
+function blitBuffer (src, dst, offset, length, unitSize) {
+  if (unitSize) length -= length % unitSize;
   for (var i = 0; i < length; i++) {
     if ((i + offset >= dst.length) || (i >= src.length))
       break
@@ -11338,7 +11444,7 @@ module.exports = function (opts) {
   });
 };
 
-},{"./upsert":64,"./utils":65}],59:[function(_dereq_,module,exports){
+},{"./upsert":86,"./utils":87}],59:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = function (func, emit, sum, log, isArray, toJSON) {
@@ -11733,6 +11839,14 @@ var updateView = utils.sequentialize(mainQueue, function (view) {
   var queue = new TaskQueue();
   // TODO(neojski): https://github.com/daleharvey/pouchdb/issues/1521
 
+  // QUIO SPECIFIC
+  var quio_model;
+  if( view.mapFun.indexOf( "VIEWVIEWVIEW" ) >= 0 ){
+    var _s	= view.mapFun.indexOf(" ",view.mapFun.indexOf( "VIEWVIEWVIEW" ));
+    quio_model	= view.mapFun.slice( _s+1, view.mapFun.indexOf("*",_s));
+  }
+
+
   return new Promise(function (resolve, reject) {
 
     function complete() {
@@ -11747,7 +11861,8 @@ var updateView = utils.sequentialize(mainQueue, function (view) {
         conflicts: true,
         include_docs: true,
         since : currentSeq,
-        limit : CHANGES_BATCH_SIZE
+        limit : CHANGES_BATCH_SIZE,
+        quio_model: quio_model
       }).on('complete', function (response) {
         var results = response.results;
         if (!results.length) {
@@ -12149,7 +12264,47 @@ function NotFoundError(message) {
 utils.inherits(NotFoundError, Error);
 
 }).call(this,_dereq_('_process'))
-},{"./create-view":58,"./evalfunc":59,"./taskqueue":63,"./utils":65,"_process":34,"pouchdb-collate":61}],61:[function(_dereq_,module,exports){
+},{"./create-view":58,"./evalfunc":59,"./taskqueue":85,"./utils":87,"_process":34,"pouchdb-collate":81}],61:[function(_dereq_,module,exports){
+module.exports=_dereq_(27)
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/argsarray/index.js":27}],62:[function(_dereq_,module,exports){
+module.exports=_dereq_(38)
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/inherits/inherits_browser.js":38}],63:[function(_dereq_,module,exports){
+module.exports=_dereq_(39)
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/INTERNAL.js":39}],64:[function(_dereq_,module,exports){
+module.exports=_dereq_(40)
+},{"./INTERNAL":63,"./handlers":65,"./promise":67,"./reject":70,"./resolve":71,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/all.js":40}],65:[function(_dereq_,module,exports){
+module.exports=_dereq_(41)
+},{"./resolveThenable":72,"./states":73,"./tryCatch":74,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/handlers.js":41}],66:[function(_dereq_,module,exports){
+module.exports=_dereq_(42)
+},{"./all":64,"./promise":67,"./race":69,"./reject":70,"./resolve":71,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/index.js":42}],67:[function(_dereq_,module,exports){
+module.exports=_dereq_(43)
+},{"./INTERNAL":63,"./queueItem":68,"./resolveThenable":72,"./states":73,"./unwrap":75,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/promise.js":43}],68:[function(_dereq_,module,exports){
+module.exports=_dereq_(44)
+},{"./handlers":65,"./unwrap":75,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/queueItem.js":44}],69:[function(_dereq_,module,exports){
+module.exports=_dereq_(45)
+},{"./INTERNAL":63,"./handlers":65,"./promise":67,"./reject":70,"./resolve":71,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/race.js":45}],70:[function(_dereq_,module,exports){
+module.exports=_dereq_(46)
+},{"./INTERNAL":63,"./handlers":65,"./promise":67,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/reject.js":46}],71:[function(_dereq_,module,exports){
+module.exports=_dereq_(47)
+},{"./INTERNAL":63,"./handlers":65,"./promise":67,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/resolve.js":47}],72:[function(_dereq_,module,exports){
+module.exports=_dereq_(48)
+},{"./handlers":65,"./tryCatch":74,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/resolveThenable.js":48}],73:[function(_dereq_,module,exports){
+module.exports=_dereq_(49)
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/states.js":49}],74:[function(_dereq_,module,exports){
+module.exports=_dereq_(50)
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/tryCatch.js":50}],75:[function(_dereq_,module,exports){
+module.exports=_dereq_(51)
+},{"./handlers":65,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/unwrap.js":51,"immediate":76}],76:[function(_dereq_,module,exports){
+module.exports=_dereq_(52)
+},{"./messageChannel":77,"./mutation.js":78,"./nextTick":28,"./stateChange":79,"./timeout":80,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/node_modules/immediate/lib/index.js":52}],77:[function(_dereq_,module,exports){
+module.exports=_dereq_(53)
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/node_modules/immediate/lib/messageChannel.js":53}],78:[function(_dereq_,module,exports){
+module.exports=_dereq_(54)
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/node_modules/immediate/lib/mutation.js":54}],79:[function(_dereq_,module,exports){
+module.exports=_dereq_(55)
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/node_modules/immediate/lib/stateChange.js":55}],80:[function(_dereq_,module,exports){
+module.exports=_dereq_(56)
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/node_modules/immediate/lib/timeout.js":56}],81:[function(_dereq_,module,exports){
 'use strict';
 
 var MIN_MAGNITUDE = -324; // verified by -Number.MIN_VALUE
@@ -12504,7 +12659,7 @@ function numToIndexableString(num) {
   return result;
 }
 
-},{"./utils":62}],62:[function(_dereq_,module,exports){
+},{"./utils":82}],82:[function(_dereq_,module,exports){
 'use strict';
 
 function pad(str, padWith, upToLength) {
@@ -12575,176 +12730,9 @@ exports.intToDecimalForm = function (int) {
 
   return result;
 };
-},{}],63:[function(_dereq_,module,exports){
-'use strict';
-/*
- * Simple task queue to sequentialize actions. Assumes callbacks will eventually fire (once).
- */
-
-var Promise = _dereq_('./utils').Promise;
-
-function TaskQueue() {
-  this.promise = new Promise(function (fulfill) {fulfill(); });
-}
-TaskQueue.prototype.add = function (promiseFactory) {
-  this.promise = this.promise["catch"](function () {
-    // just recover
-  }).then(function () {
-    return promiseFactory();
-  });
-  return this.promise;
-};
-TaskQueue.prototype.finish = function () {
-  return this.promise;
-};
-
-module.exports = TaskQueue;
-
-},{"./utils":65}],64:[function(_dereq_,module,exports){
-'use strict';
-var Promise = _dereq_('./utils').Promise;
-
-// this is essentially the "update sugar" function from daleharvey/pouchdb#1388
-// the diffFun tells us what delta to apply to the doc.  it either returns
-// the doc, or false if it doesn't need to do an update after all
-function upsert(db, docId, diffFun) {
-  return new Promise(function (fulfill, reject) {
-    if (docId && typeof docId === 'object') {
-      docId = docId._id;
-    }
-    if (typeof docId !== 'string') {
-      return reject(new Error('doc id is required'));
-    }
-
-    db.get(docId, function (err, doc) {
-      if (err) {
-        if (err.status !== 404) {
-          return reject(err);
-        }
-        return fulfill(tryAndPut(db, diffFun({_id : docId}), diffFun));
-      }
-      var newDoc = diffFun(doc);
-      if (!newDoc) {
-        return fulfill(doc);
-      }
-      fulfill(tryAndPut(db, newDoc, diffFun));
-    });
-  });
-}
-
-function tryAndPut(db, doc, diffFun) {
-  return db.put(doc)["catch"](function (err) {
-    if (err.status !== 409) {
-      throw err;
-    }
-    return upsert(db, doc, diffFun);
-  });
-}
-
-module.exports = upsert;
-
-},{"./utils":65}],65:[function(_dereq_,module,exports){
-(function (process,global){
-'use strict';
-/* istanbul ignore if */
-if (typeof global.Promise === 'function') {
-  exports.Promise = global.Promise;
-} else {
-  exports.Promise = _dereq_('lie');
-}
-
-exports.inherits = _dereq_('inherits');
-exports.extend = _dereq_('pouchdb-extend');
-var argsarray = _dereq_('argsarray');
-
-exports.promisedCallback = function (promise, callback) {
-  if (callback) {
-    promise.then(function (res) {
-      process.nextTick(function () {
-        callback(null, res);
-      });
-    }, function (reason) {
-      process.nextTick(function () {
-        callback(reason);
-      });
-    });
-  }
-  return promise;
-};
-
-exports.callbackify = function (fun) {
-  return argsarray(function (args) {
-    var cb = args.pop();
-    var promise = fun.apply(this, args);
-    if (typeof cb === 'function') {
-      exports.promisedCallback(promise, cb);
-    }
-    return promise;
-  });
-};
-
-// Promise finally util similar to Q.finally
-exports.fin = function (promise, cb) {
-  return promise.then(function (res) {
-    var promise2 = cb();
-    if (typeof promise2.then === 'function') {
-      return promise2.then(function () {
-        return res;
-      });
-    }
-    return res;
-  }, function (reason) {
-    var promise2 = cb();
-    if (typeof promise2.then === 'function') {
-      return promise2.then(function () {
-        throw reason;
-      });
-    }
-    throw reason;
-  });
-};
-
-exports.sequentialize = function (queue, promiseFactory) {
-  return function () {
-    var args = arguments;
-    var that = this;
-    return queue.add(function () {
-      return promiseFactory.apply(that, args);
-    });
-  };
-};
-
-// uniq an array of strings, order not guaranteed
-// similar to underscore/lodash _.uniq
-exports.uniq = function (arr) {
-  var map = {};
-
-  for (var i = 0, len = arr.length; i < len; i++) {
-    map['$' + arr[i]] = true;
-  }
-
-  var keys = Object.keys(map);
-  var output = new Array(keys.length);
-
-  for (i = 0, len = keys.length; i < len; i++) {
-    output[i] = keys[i].substring(1);
-  }
-  return output;
-};
-
-var crypto = _dereq_('crypto');
-var Md5 = _dereq_('spark-md5');
-
-exports.MD5 = function (string) {
-  /* istanbul ignore else */
-  if (!process.browser) {
-    return crypto.createHash('md5').update(string).digest('hex');
-  } else {
-    return Md5.hash(string);
-  }
-};
-}).call(this,_dereq_('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":34,"argsarray":27,"crypto":28,"inherits":38,"lie":42,"pouchdb-extend":57,"spark-md5":66}],66:[function(_dereq_,module,exports){
+},{}],83:[function(_dereq_,module,exports){
+module.exports=_dereq_(57)
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/pouchdb-extend/index.js":57}],84:[function(_dereq_,module,exports){
 /*jshint bitwise:false*/
 /*global unescape*/
 
@@ -13345,7 +13333,178 @@ exports.MD5 = function (string) {
     return SparkMD5;
 }));
 
-},{}],67:[function(_dereq_,module,exports){
+},{}],85:[function(_dereq_,module,exports){
+'use strict';
+/*
+ * Simple task queue to sequentialize actions. Assumes callbacks will eventually fire (once).
+ */
+
+var Promise = _dereq_('./utils').Promise;
+
+function TaskQueue() {
+  this.promise = new Promise(function (fulfill) {fulfill(); });
+}
+TaskQueue.prototype.add = function (promiseFactory) {
+  this.promise = this.promise["catch"](function () {
+    // just recover
+  }).then(function () {
+    return promiseFactory();
+  });
+  return this.promise;
+};
+TaskQueue.prototype.finish = function () {
+  return this.promise;
+};
+
+module.exports = TaskQueue;
+
+},{"./utils":87}],86:[function(_dereq_,module,exports){
+'use strict';
+var Promise = _dereq_('./utils').Promise;
+
+// this is essentially the "update sugar" function from daleharvey/pouchdb#1388
+// the diffFun tells us what delta to apply to the doc.  it either returns
+// the doc, or false if it doesn't need to do an update after all
+function upsert(db, docId, diffFun) {
+  return new Promise(function (fulfill, reject) {
+    if (docId && typeof docId === 'object') {
+      docId = docId._id;
+    }
+    if (typeof docId !== 'string') {
+      return reject(new Error('doc id is required'));
+    }
+
+    db.get(docId, function (err, doc) {
+      if (err) {
+        if (err.status !== 404) {
+          return reject(err);
+        }
+        return fulfill(tryAndPut(db, diffFun({_id : docId}), diffFun));
+      }
+      var newDoc = diffFun(doc);
+      if (!newDoc) {
+        return fulfill(doc);
+      }
+      fulfill(tryAndPut(db, newDoc, diffFun));
+    });
+  });
+}
+
+function tryAndPut(db, doc, diffFun) {
+  return db.put(doc)["catch"](function (err) {
+    if (err.status !== 409) {
+      throw err;
+    }
+    return upsert(db, doc, diffFun);
+  });
+}
+
+module.exports = upsert;
+
+},{"./utils":87}],87:[function(_dereq_,module,exports){
+(function (process,global){
+'use strict';
+/* istanbul ignore if */
+if (typeof global.Promise === 'function') {
+  exports.Promise = global.Promise;
+} else {
+  exports.Promise = _dereq_('lie');
+}
+
+exports.inherits = _dereq_('inherits');
+exports.extend = _dereq_('pouchdb-extend');
+var argsarray = _dereq_('argsarray');
+
+exports.promisedCallback = function (promise, callback) {
+  if (callback) {
+    promise.then(function (res) {
+      process.nextTick(function () {
+        callback(null, res);
+      });
+    }, function (reason) {
+      process.nextTick(function () {
+        callback(reason);
+      });
+    });
+  }
+  return promise;
+};
+
+exports.callbackify = function (fun) {
+  return argsarray(function (args) {
+    var cb = args.pop();
+    var promise = fun.apply(this, args);
+    if (typeof cb === 'function') {
+      exports.promisedCallback(promise, cb);
+    }
+    return promise;
+  });
+};
+
+// Promise finally util similar to Q.finally
+exports.fin = function (promise, cb) {
+  return promise.then(function (res) {
+    var promise2 = cb();
+    if (typeof promise2.then === 'function') {
+      return promise2.then(function () {
+        return res;
+      });
+    }
+    return res;
+  }, function (reason) {
+    var promise2 = cb();
+    if (typeof promise2.then === 'function') {
+      return promise2.then(function () {
+        throw reason;
+      });
+    }
+    throw reason;
+  });
+};
+
+exports.sequentialize = function (queue, promiseFactory) {
+  return function () {
+    var args = arguments;
+    var that = this;
+    return queue.add(function () {
+      return promiseFactory.apply(that, args);
+    });
+  };
+};
+
+// uniq an array of strings, order not guaranteed
+// similar to underscore/lodash _.uniq
+exports.uniq = function (arr) {
+  var map = {};
+
+  for (var i = 0, len = arr.length; i < len; i++) {
+    map['$' + arr[i]] = true;
+  }
+
+  var keys = Object.keys(map);
+  var output = new Array(keys.length);
+
+  for (i = 0, len = keys.length; i < len; i++) {
+    output[i] = keys[i].substring(1);
+  }
+  return output;
+};
+
+var crypto = _dereq_('crypto');
+var Md5 = _dereq_('spark-md5');
+
+exports.MD5 = function (string) {
+  /* istanbul ignore else */
+  if (!process.browser) {
+    return crypto.createHash('md5').update(string).digest('hex');
+  } else {
+    return Md5.hash(string);
+  }
+};
+}).call(this,_dereq_('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"_process":34,"argsarray":61,"crypto":28,"inherits":62,"lie":66,"pouchdb-extend":83,"spark-md5":84}],88:[function(_dereq_,module,exports){
+module.exports=_dereq_(84)
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/pouchdb-mapreduce/node_modules/spark-md5/spark-md5.js":84}],89:[function(_dereq_,module,exports){
 'use strict';
 
 /**
@@ -13520,7 +13679,7 @@ exports.parse = function (str) {
   }
 };
 
-},{}],68:[function(_dereq_,module,exports){
+},{}],90:[function(_dereq_,module,exports){
 (function (process){
 "use strict";
 
@@ -13550,5 +13709,5 @@ if (!process.browser) {
 }
 
 }).call(this,_dereq_('_process'))
-},{"./adapters/http":2,"./adapters/idb":3,"./adapters/leveldb":28,"./adapters/websql":5,"./deps/ajax":9,"./deps/errors":12,"./replicate":21,"./setup":22,"./sync":23,"./utils":25,"./version":26,"_process":34,"pouchdb-extend":57,"pouchdb-mapreduce":60}]},{},[68])(68)
+},{"./adapters/http":2,"./adapters/idb":3,"./adapters/leveldb":28,"./adapters/websql":5,"./deps/ajax":9,"./deps/errors":12,"./replicate":21,"./setup":22,"./sync":23,"./utils":25,"./version":26,"_process":34,"pouchdb-extend":57,"pouchdb-mapreduce":60}]},{},[90])(90)
 });

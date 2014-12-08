@@ -3492,7 +3492,7 @@ function argsArray(fun) {
 
 },{}],16:[function(_dereq_,module,exports){
 module.exports=_dereq_(15)
-},{"/Users/nolan/workspace/pouchdb/node_modules/browserify/lib/_empty.js":15}],17:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/lib/_empty.js":15}],17:[function(_dereq_,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -3844,7 +3844,7 @@ function base64Write (buf, string, offset, length) {
 }
 
 function utf16leWrite (buf, string, offset, length) {
-  var charsWritten = blitBuffer(utf16leToBytes(string), buf, offset, length)
+  var charsWritten = blitBuffer(utf16leToBytes(string), buf, offset, length, 2)
   return charsWritten
 }
 
@@ -4528,7 +4528,8 @@ function base64ToBytes (str) {
   return base64.toByteArray(str)
 }
 
-function blitBuffer (src, dst, offset, length) {
+function blitBuffer (src, dst, offset, length, unitSize) {
+  if (unitSize) length -= length % unitSize;
   for (var i = 0; i < length; i++) {
     if ((i + offset >= dst.length) || (i >= src.length))
       break
@@ -11600,11 +11601,11 @@ var satifies = exports.satisfies = function (key, range) {
 
 },{}],66:[function(_dereq_,module,exports){
 module.exports=_dereq_(54)
-},{"/Users/nolan/workspace/pouchdb/node_modules/level-js/node_modules/xtend/has-keys.js":54}],67:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/has-keys.js":54}],67:[function(_dereq_,module,exports){
 arguments[4][55][0].apply(exports,arguments)
-},{"./has-keys":66,"/Users/nolan/workspace/pouchdb/node_modules/level-js/node_modules/xtend/index.js":55,"object-keys":68}],68:[function(_dereq_,module,exports){
+},{"./has-keys":66,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/index.js":55,"object-keys":68}],68:[function(_dereq_,module,exports){
 arguments[4][57][0].apply(exports,arguments)
-},{"./shim":71,"/Users/nolan/workspace/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/index.js":57}],69:[function(_dereq_,module,exports){
+},{"./shim":71,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/node_modules/object-keys/index.js":57}],69:[function(_dereq_,module,exports){
 
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
@@ -13966,11 +13967,11 @@ module.exports = DeferredLevelDOWN
 }).call(this,_dereq_('_process'),_dereq_("buffer").Buffer)
 },{"_process":24,"abstract-leveldown":83,"buffer":17,"util":39}],81:[function(_dereq_,module,exports){
 module.exports=_dereq_(46)
-},{"/Users/nolan/workspace/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/abstract-chained-batch.js":46,"_process":24}],82:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/abstract-leveldown/abstract-chained-batch.js":46,"_process":24}],82:[function(_dereq_,module,exports){
 module.exports=_dereq_(47)
-},{"/Users/nolan/workspace/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/abstract-iterator.js":47,"_process":24}],83:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/abstract-leveldown/abstract-iterator.js":47,"_process":24}],83:[function(_dereq_,module,exports){
 module.exports=_dereq_(48)
-},{"./abstract-chained-batch":81,"./abstract-iterator":82,"/Users/nolan/workspace/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/abstract-leveldown.js":48,"_process":24,"buffer":17,"xtend":96}],84:[function(_dereq_,module,exports){
+},{"./abstract-chained-batch":81,"./abstract-iterator":82,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/abstract-leveldown/abstract-leveldown.js":48,"_process":24,"buffer":17,"xtend":96}],84:[function(_dereq_,module,exports){
 var prr = _dereq_('prr')
 
 function init (type, message, cause) {
@@ -14521,25 +14522,25 @@ module.exports.create = module.exports.custom.createError
 })
 },{}],87:[function(_dereq_,module,exports){
 module.exports=_dereq_(26)
-},{"./_stream_readable":89,"./_stream_writable":91,"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_duplex.js":26,"_process":24,"core-util-is":92,"inherits":44}],88:[function(_dereq_,module,exports){
+},{"./_stream_readable":89,"./_stream_writable":91,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_duplex.js":26,"_process":24,"core-util-is":92,"inherits":44}],88:[function(_dereq_,module,exports){
 module.exports=_dereq_(27)
-},{"./_stream_transform":90,"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_passthrough.js":27,"core-util-is":92,"inherits":44}],89:[function(_dereq_,module,exports){
+},{"./_stream_transform":90,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_passthrough.js":27,"core-util-is":92,"inherits":44}],89:[function(_dereq_,module,exports){
 module.exports=_dereq_(28)
-},{"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_readable.js":28,"_process":24,"buffer":17,"core-util-is":92,"events":21,"inherits":44,"isarray":93,"stream":36,"string_decoder/":94}],90:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_readable.js":28,"_process":24,"buffer":17,"core-util-is":92,"events":21,"inherits":44,"isarray":93,"stream":36,"string_decoder/":94}],90:[function(_dereq_,module,exports){
 module.exports=_dereq_(29)
-},{"./_stream_duplex":87,"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_transform.js":29,"core-util-is":92,"inherits":44}],91:[function(_dereq_,module,exports){
+},{"./_stream_duplex":87,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_transform.js":29,"core-util-is":92,"inherits":44}],91:[function(_dereq_,module,exports){
 module.exports=_dereq_(30)
-},{"./_stream_duplex":87,"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_writable.js":30,"_process":24,"buffer":17,"core-util-is":92,"inherits":44,"stream":36}],92:[function(_dereq_,module,exports){
+},{"./_stream_duplex":87,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_writable.js":30,"_process":24,"buffer":17,"core-util-is":92,"inherits":44,"stream":36}],92:[function(_dereq_,module,exports){
 module.exports=_dereq_(31)
-},{"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/readable-stream/node_modules/core-util-is/lib/util.js":31,"buffer":17}],93:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/node_modules/core-util-is/lib/util.js":31,"buffer":17}],93:[function(_dereq_,module,exports){
 module.exports=_dereq_(22)
-},{"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/isarray/index.js":22}],94:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/isarray/index.js":22}],94:[function(_dereq_,module,exports){
 module.exports=_dereq_(37)
-},{"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/string_decoder/index.js":37,"buffer":17}],95:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/string_decoder/index.js":37,"buffer":17}],95:[function(_dereq_,module,exports){
 module.exports=_dereq_(33)
-},{"./lib/_stream_duplex.js":87,"./lib/_stream_passthrough.js":88,"./lib/_stream_readable.js":89,"./lib/_stream_transform.js":90,"./lib/_stream_writable.js":91,"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/readable-stream/readable.js":33,"stream":36}],96:[function(_dereq_,module,exports){
+},{"./lib/_stream_duplex.js":87,"./lib/_stream_passthrough.js":88,"./lib/_stream_readable.js":89,"./lib/_stream_transform.js":90,"./lib/_stream_writable.js":91,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/readable.js":33,"stream":36}],96:[function(_dereq_,module,exports){
 module.exports=_dereq_(49)
-},{"/Users/nolan/workspace/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/node_modules/xtend/index.js":49}],97:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/abstract-leveldown/node_modules/xtend/index.js":49}],97:[function(_dereq_,module,exports){
 module.exports={
   "name": "levelup",
   "description": "Fast & simple storage - a Node.js-style LevelDB wrapper",
@@ -14670,7 +14671,7 @@ module.exports={
   },
   "_id": "levelup@0.18.6",
   "_shasum": "e6a01cb089616c8ecc0291c2a9bd3f0c44e3e5eb",
-  "_from": "levelup@~0.18.4",
+  "_from": "levelup@>=0.18.4-0 <0.19.0-0",
   "_npmVersion": "1.4.14",
   "_npmUser": {
     "name": "rvagg",
@@ -14684,9 +14685,10 @@ module.exports={
   ],
   "dist": {
     "shasum": "e6a01cb089616c8ecc0291c2a9bd3f0c44e3e5eb",
-    "tarball": "http://127.0.0.1:5080/tarballs/levelup/0.18.6.tgz"
+    "tarball": "http://registry.npmjs.org/levelup/-/levelup-0.18.6.tgz"
   },
-  "_resolved": "http://127.0.0.1:5080/tarballs/levelup/0.18.6.tgz",
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/levelup/-/levelup-0.18.6.tgz",
   "readme": "ERROR: No README data found!"
 }
 
@@ -15943,33 +15945,33 @@ module.exports = extend;
 
 },{}],118:[function(_dereq_,module,exports){
 module.exports=_dereq_(26)
-},{"./_stream_readable":119,"./_stream_writable":121,"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_duplex.js":26,"_process":24,"core-util-is":122,"inherits":44}],119:[function(_dereq_,module,exports){
+},{"./_stream_readable":119,"./_stream_writable":121,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_duplex.js":26,"_process":24,"core-util-is":122,"inherits":44}],119:[function(_dereq_,module,exports){
 module.exports=_dereq_(28)
-},{"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_readable.js":28,"_process":24,"buffer":17,"core-util-is":122,"events":21,"inherits":44,"isarray":123,"stream":36,"string_decoder/":124}],120:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_readable.js":28,"_process":24,"buffer":17,"core-util-is":122,"events":21,"inherits":44,"isarray":123,"stream":36,"string_decoder/":124}],120:[function(_dereq_,module,exports){
 module.exports=_dereq_(29)
-},{"./_stream_duplex":118,"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_transform.js":29,"core-util-is":122,"inherits":44}],121:[function(_dereq_,module,exports){
+},{"./_stream_duplex":118,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_transform.js":29,"core-util-is":122,"inherits":44}],121:[function(_dereq_,module,exports){
 module.exports=_dereq_(30)
-},{"./_stream_duplex":118,"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_writable.js":30,"_process":24,"buffer":17,"core-util-is":122,"inherits":44,"stream":36}],122:[function(_dereq_,module,exports){
+},{"./_stream_duplex":118,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_writable.js":30,"_process":24,"buffer":17,"core-util-is":122,"inherits":44,"stream":36}],122:[function(_dereq_,module,exports){
 module.exports=_dereq_(31)
-},{"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/readable-stream/node_modules/core-util-is/lib/util.js":31,"buffer":17}],123:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/node_modules/core-util-is/lib/util.js":31,"buffer":17}],123:[function(_dereq_,module,exports){
 module.exports=_dereq_(22)
-},{"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/isarray/index.js":22}],124:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/isarray/index.js":22}],124:[function(_dereq_,module,exports){
 module.exports=_dereq_(37)
-},{"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/string_decoder/index.js":37,"buffer":17}],125:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/string_decoder/index.js":37,"buffer":17}],125:[function(_dereq_,module,exports){
 module.exports=_dereq_(34)
-},{"./lib/_stream_transform.js":120,"/Users/nolan/workspace/pouchdb/node_modules/browserify/node_modules/readable-stream/transform.js":34}],126:[function(_dereq_,module,exports){
+},{"./lib/_stream_transform.js":120,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/transform.js":34}],126:[function(_dereq_,module,exports){
 module.exports=_dereq_(54)
-},{"/Users/nolan/workspace/pouchdb/node_modules/level-js/node_modules/xtend/has-keys.js":54}],127:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/has-keys.js":54}],127:[function(_dereq_,module,exports){
 module.exports=_dereq_(55)
-},{"./has-keys":126,"/Users/nolan/workspace/pouchdb/node_modules/level-js/node_modules/xtend/index.js":55,"object-keys":129}],128:[function(_dereq_,module,exports){
+},{"./has-keys":126,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/index.js":55,"object-keys":129}],128:[function(_dereq_,module,exports){
 module.exports=_dereq_(56)
-},{"/Users/nolan/workspace/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/foreach.js":56}],129:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/node_modules/object-keys/foreach.js":56}],129:[function(_dereq_,module,exports){
 module.exports=_dereq_(57)
-},{"./shim":131,"/Users/nolan/workspace/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/index.js":57}],130:[function(_dereq_,module,exports){
+},{"./shim":131,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/node_modules/object-keys/index.js":57}],130:[function(_dereq_,module,exports){
 module.exports=_dereq_(58)
-},{"/Users/nolan/workspace/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/isArguments.js":58}],131:[function(_dereq_,module,exports){
+},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/node_modules/object-keys/isArguments.js":58}],131:[function(_dereq_,module,exports){
 module.exports=_dereq_(59)
-},{"./foreach":128,"./isArguments":130,"/Users/nolan/workspace/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/shim.js":59}],132:[function(_dereq_,module,exports){
+},{"./foreach":128,"./isArguments":130,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/node_modules/object-keys/shim.js":59}],132:[function(_dereq_,module,exports){
 var Transform = _dereq_('readable-stream/transform')
   , inherits  = _dereq_('util').inherits
   , xtend     = _dereq_('xtend')
