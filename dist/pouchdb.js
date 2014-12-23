@@ -1576,6 +1576,9 @@ function HttpPouch(opts, callback) {
     // set of changes to return and attempting to process them at once
     var batchSize = 'batch_size' in opts ? opts.batch_size : CHANGES_BATCH_SIZE;
 
+	console.log( "I have opts of " );
+	console.log( opts );
+
     opts = utils.clone(opts);
     opts.timeout = opts.timeout || 30 * 1000;
 
@@ -6660,6 +6663,7 @@ function genReplicationId(src, target, opts) {
 }
 
 function replicate(repId, src, target, opts, returnValue, result) {
+
   var batches = [];               // list of batches to be processed
   var currentBatch;               // the batch currently being processed
   var pendingBatch = {
@@ -6667,6 +6671,10 @@ function replicate(repId, src, target, opts, returnValue, result) {
     changes: [],
     docs: []
   }; // next batch, not yet ready to be processed
+
+  // We want timeout to be defined.
+  opts.timeout = opts.timeout || 30 * 1000;
+
   var writingCheckpoint = false;  // true while checkpoint is being written
   var changesCompleted = false;   // true when all changes received
   var replicationCompleted = false; // true when replication has completed
@@ -6831,19 +6839,24 @@ function replicate(repId, src, target, opts, returnValue, result) {
 
   
   function getAllDocs() {
+
+	/*
+	Could try and query more than one at a time to speed things up..
+	but doing all of it at once ( such as below ) causes real issues.
+
     var _promises = [ ];
     Object.keys( currentBatch.diffs ).forEach( function( diffId ){
       _promises.push( getSpecificDoc( diffId ) );
     } );
     return utils.Promise.all( _promises );
+	*/
 
-    /*
     if (Object.keys(currentBatch.diffs).length > 0) {
-      return getNextDoc().then(getAllDocs);
+      return getSpecificDoc( Object.keys( currentBatch.diffs )[0] ).then( getAllDocs );
+      //return getNextDoc().then(getAllDocs);
     } else {
       return utils.Promise.resolve();
     }
-    */
   }
 
 
@@ -7122,7 +7135,8 @@ function replicate(repId, src, target, opts, returnValue, result) {
         batch_size: batch_size,
         style: 'all_docs',
         doc_ids: doc_ids,
-        returnDocs: false
+        returnDocs: false,
+	timeout: opts.timeout || 30 * 1000
       };
       if (opts.filter) {
         changesOpts.filter = opts.filter;
