@@ -4981,8 +4981,6 @@ Changes.prototype.doChanges = function (opts) {
 
   opts = utils.clone(opts);
 
-	console.log( "since 0: " + opts.since );
-
   if ('live' in opts && !('continuous' in opts)) {
     opts.continuous = opts.live;
   }
@@ -5038,8 +5036,6 @@ Changes.prototype.doChanges = function (opts) {
   // 0 and 1 should return 1 document
   opts.limit = opts.limit === 0 ? 1 : opts.limit;
   opts.complete = callback;
-
-  console.log( "Calling changes with opts of " + JSON.stringify( opts ) );
 
   var newPromise = this.db._changes(opts);
   if (newPromise && typeof newPromise.cancel === 'function') {
