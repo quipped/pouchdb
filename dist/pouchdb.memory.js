@@ -3492,7 +3492,7 @@ function argsArray(fun) {
 
 },{}],16:[function(_dereq_,module,exports){
 module.exports=_dereq_(15)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/lib/_empty.js":15}],17:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/lib/_empty.js":15}],17:[function(_dereq_,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -8239,6 +8239,17 @@ exports.load = load;
 exports.useColors = useColors;
 
 /**
+ * Use chrome.storage.local if we are in an app
+ */
+
+var storage;
+
+if (typeof chrome !== 'undefined' && typeof chrome.storage !== 'undefined')
+  storage = chrome.storage.local;
+else
+  storage = window.localStorage;
+
+/**
  * Colors.
  */
 
@@ -8327,10 +8338,10 @@ function formatArgs() {
  */
 
 function log() {
-  // This hackery is required for IE8,
-  // where the `console.log` function doesn't have 'apply'
-  return 'object' == typeof console
-    && 'function' == typeof console.log
+  // this hackery is required for IE8/9, where
+  // the `console.log` function doesn't have 'apply'
+  return 'object' === typeof console
+    && console.log
     && Function.prototype.apply.call(console.log, console, arguments);
 }
 
@@ -8344,9 +8355,9 @@ function log() {
 function save(namespaces) {
   try {
     if (null == namespaces) {
-      localStorage.removeItem('debug');
+      storage.removeItem('debug');
     } else {
-      localStorage.debug = namespaces;
+      storage.debug = namespaces;
     }
   } catch(e) {}
 }
@@ -8361,7 +8372,7 @@ function save(namespaces) {
 function load() {
   var r;
   try {
-    r = localStorage.debug;
+    r = storage.debug;
   } catch(e) {}
   return r;
 }
@@ -11601,11 +11612,11 @@ var satifies = exports.satisfies = function (key, range) {
 
 },{}],66:[function(_dereq_,module,exports){
 module.exports=_dereq_(54)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/has-keys.js":54}],67:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/has-keys.js":54}],67:[function(_dereq_,module,exports){
 arguments[4][55][0].apply(exports,arguments)
-},{"./has-keys":66,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/index.js":55,"object-keys":68}],68:[function(_dereq_,module,exports){
+},{"./has-keys":66,"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/index.js":55,"object-keys":68}],68:[function(_dereq_,module,exports){
 arguments[4][57][0].apply(exports,arguments)
-},{"./shim":71,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/node_modules/object-keys/index.js":57}],69:[function(_dereq_,module,exports){
+},{"./shim":71,"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/index.js":57}],69:[function(_dereq_,module,exports){
 
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
@@ -13967,11 +13978,11 @@ module.exports = DeferredLevelDOWN
 }).call(this,_dereq_('_process'),_dereq_("buffer").Buffer)
 },{"_process":24,"abstract-leveldown":83,"buffer":17,"util":39}],81:[function(_dereq_,module,exports){
 module.exports=_dereq_(46)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/abstract-leveldown/abstract-chained-batch.js":46,"_process":24}],82:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/abstract-chained-batch.js":46,"_process":24}],82:[function(_dereq_,module,exports){
 module.exports=_dereq_(47)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/abstract-leveldown/abstract-iterator.js":47,"_process":24}],83:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/abstract-iterator.js":47,"_process":24}],83:[function(_dereq_,module,exports){
 module.exports=_dereq_(48)
-},{"./abstract-chained-batch":81,"./abstract-iterator":82,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/abstract-leveldown/abstract-leveldown.js":48,"_process":24,"buffer":17,"xtend":96}],84:[function(_dereq_,module,exports){
+},{"./abstract-chained-batch":81,"./abstract-iterator":82,"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/abstract-leveldown.js":48,"_process":24,"buffer":17,"xtend":96}],84:[function(_dereq_,module,exports){
 var prr = _dereq_('prr')
 
 function init (type, message, cause) {
@@ -14522,25 +14533,25 @@ module.exports.create = module.exports.custom.createError
 })
 },{}],87:[function(_dereq_,module,exports){
 module.exports=_dereq_(26)
-},{"./_stream_readable":89,"./_stream_writable":91,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_duplex.js":26,"_process":24,"core-util-is":92,"inherits":44}],88:[function(_dereq_,module,exports){
+},{"./_stream_readable":89,"./_stream_writable":91,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_duplex.js":26,"_process":24,"core-util-is":92,"inherits":44}],88:[function(_dereq_,module,exports){
 module.exports=_dereq_(27)
-},{"./_stream_transform":90,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_passthrough.js":27,"core-util-is":92,"inherits":44}],89:[function(_dereq_,module,exports){
+},{"./_stream_transform":90,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_passthrough.js":27,"core-util-is":92,"inherits":44}],89:[function(_dereq_,module,exports){
 module.exports=_dereq_(28)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_readable.js":28,"_process":24,"buffer":17,"core-util-is":92,"events":21,"inherits":44,"isarray":93,"stream":36,"string_decoder/":94}],90:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_readable.js":28,"_process":24,"buffer":17,"core-util-is":92,"events":21,"inherits":44,"isarray":93,"stream":36,"string_decoder/":94}],90:[function(_dereq_,module,exports){
 module.exports=_dereq_(29)
-},{"./_stream_duplex":87,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_transform.js":29,"core-util-is":92,"inherits":44}],91:[function(_dereq_,module,exports){
+},{"./_stream_duplex":87,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_transform.js":29,"core-util-is":92,"inherits":44}],91:[function(_dereq_,module,exports){
 module.exports=_dereq_(30)
-},{"./_stream_duplex":87,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_writable.js":30,"_process":24,"buffer":17,"core-util-is":92,"inherits":44,"stream":36}],92:[function(_dereq_,module,exports){
+},{"./_stream_duplex":87,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_writable.js":30,"_process":24,"buffer":17,"core-util-is":92,"inherits":44,"stream":36}],92:[function(_dereq_,module,exports){
 module.exports=_dereq_(31)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/node_modules/core-util-is/lib/util.js":31,"buffer":17}],93:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/node_modules/core-util-is/lib/util.js":31,"buffer":17}],93:[function(_dereq_,module,exports){
 module.exports=_dereq_(22)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/isarray/index.js":22}],94:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/isarray/index.js":22}],94:[function(_dereq_,module,exports){
 module.exports=_dereq_(37)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/string_decoder/index.js":37,"buffer":17}],95:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/string_decoder/index.js":37,"buffer":17}],95:[function(_dereq_,module,exports){
 module.exports=_dereq_(33)
-},{"./lib/_stream_duplex.js":87,"./lib/_stream_passthrough.js":88,"./lib/_stream_readable.js":89,"./lib/_stream_transform.js":90,"./lib/_stream_writable.js":91,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/readable.js":33,"stream":36}],96:[function(_dereq_,module,exports){
+},{"./lib/_stream_duplex.js":87,"./lib/_stream_passthrough.js":88,"./lib/_stream_readable.js":89,"./lib/_stream_transform.js":90,"./lib/_stream_writable.js":91,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/readable.js":33,"stream":36}],96:[function(_dereq_,module,exports){
 module.exports=_dereq_(49)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/abstract-leveldown/node_modules/xtend/index.js":49}],97:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/node_modules/xtend/index.js":49}],97:[function(_dereq_,module,exports){
 module.exports={
   "name": "levelup",
   "description": "Fast & simple storage - a Node.js-style LevelDB wrapper",
@@ -14671,7 +14682,7 @@ module.exports={
   },
   "_id": "levelup@0.18.6",
   "_shasum": "e6a01cb089616c8ecc0291c2a9bd3f0c44e3e5eb",
-  "_from": "levelup@>=0.18.4-0 <0.19.0-0",
+  "_from": "levelup@>=0.18.4 <0.19.0",
   "_npmVersion": "1.4.14",
   "_npmUser": {
     "name": "rvagg",
@@ -14810,7 +14821,7 @@ function Promise(resolver) {
     return new Promise(resolver);
   }
   if (typeof resolver !== 'function') {
-    throw new TypeError('reslover must be a function');
+    throw new TypeError('resolver must be a function');
   }
   this.state = states.PENDING;
   this.queue = [];
@@ -15945,33 +15956,33 @@ module.exports = extend;
 
 },{}],118:[function(_dereq_,module,exports){
 module.exports=_dereq_(26)
-},{"./_stream_readable":119,"./_stream_writable":121,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_duplex.js":26,"_process":24,"core-util-is":122,"inherits":44}],119:[function(_dereq_,module,exports){
+},{"./_stream_readable":119,"./_stream_writable":121,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_duplex.js":26,"_process":24,"core-util-is":122,"inherits":44}],119:[function(_dereq_,module,exports){
 module.exports=_dereq_(28)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_readable.js":28,"_process":24,"buffer":17,"core-util-is":122,"events":21,"inherits":44,"isarray":123,"stream":36,"string_decoder/":124}],120:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_readable.js":28,"_process":24,"buffer":17,"core-util-is":122,"events":21,"inherits":44,"isarray":123,"stream":36,"string_decoder/":124}],120:[function(_dereq_,module,exports){
 module.exports=_dereq_(29)
-},{"./_stream_duplex":118,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_transform.js":29,"core-util-is":122,"inherits":44}],121:[function(_dereq_,module,exports){
+},{"./_stream_duplex":118,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_transform.js":29,"core-util-is":122,"inherits":44}],121:[function(_dereq_,module,exports){
 module.exports=_dereq_(30)
-},{"./_stream_duplex":118,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/lib/_stream_writable.js":30,"_process":24,"buffer":17,"core-util-is":122,"inherits":44,"stream":36}],122:[function(_dereq_,module,exports){
+},{"./_stream_duplex":118,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_writable.js":30,"_process":24,"buffer":17,"core-util-is":122,"inherits":44,"stream":36}],122:[function(_dereq_,module,exports){
 module.exports=_dereq_(31)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/node_modules/core-util-is/lib/util.js":31,"buffer":17}],123:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/node_modules/core-util-is/lib/util.js":31,"buffer":17}],123:[function(_dereq_,module,exports){
 module.exports=_dereq_(22)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/isarray/index.js":22}],124:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/isarray/index.js":22}],124:[function(_dereq_,module,exports){
 module.exports=_dereq_(37)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/string_decoder/index.js":37,"buffer":17}],125:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/string_decoder/index.js":37,"buffer":17}],125:[function(_dereq_,module,exports){
 module.exports=_dereq_(34)
-},{"./lib/_stream_transform.js":120,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/browserify/node_modules/readable-stream/transform.js":34}],126:[function(_dereq_,module,exports){
+},{"./lib/_stream_transform.js":120,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/transform.js":34}],126:[function(_dereq_,module,exports){
 module.exports=_dereq_(54)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/has-keys.js":54}],127:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/has-keys.js":54}],127:[function(_dereq_,module,exports){
 module.exports=_dereq_(55)
-},{"./has-keys":126,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/index.js":55,"object-keys":129}],128:[function(_dereq_,module,exports){
+},{"./has-keys":126,"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/index.js":55,"object-keys":129}],128:[function(_dereq_,module,exports){
 module.exports=_dereq_(56)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/node_modules/object-keys/foreach.js":56}],129:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/foreach.js":56}],129:[function(_dereq_,module,exports){
 module.exports=_dereq_(57)
-},{"./shim":131,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/node_modules/object-keys/index.js":57}],130:[function(_dereq_,module,exports){
+},{"./shim":131,"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/index.js":57}],130:[function(_dereq_,module,exports){
 module.exports=_dereq_(58)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/node_modules/object-keys/isArguments.js":58}],131:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/isArguments.js":58}],131:[function(_dereq_,module,exports){
 module.exports=_dereq_(59)
-},{"./foreach":128,"./isArguments":130,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/level-js/node_modules/xtend/node_modules/object-keys/shim.js":59}],132:[function(_dereq_,module,exports){
+},{"./foreach":128,"./isArguments":130,"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/shim.js":59}],132:[function(_dereq_,module,exports){
 var Transform = _dereq_('readable-stream/transform')
   , inherits  = _dereq_('util').inherits
   , xtend     = _dereq_('xtend')

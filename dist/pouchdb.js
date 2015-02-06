@@ -2905,7 +2905,10 @@ function init(api, opts, callback) {
 
       var req;
 
-      if (descending) {
+      if (opts["quio_model"]) {
+        req = txn.objectStore(BY_SEQ_STORE)
+            .openCursor(global.IDBKeyRange.bound(opts["quio_model"] + "_", opts["quio_model"] + "_\uffff"), 'prev');
+      } else if (descending) {
         req = txn.objectStore(BY_SEQ_STORE)
             .openCursor(global.IDBKeyRange.lowerBound(opts.since, true),
                         descending);
@@ -10262,6 +10265,17 @@ exports.load = load;
 exports.useColors = useColors;
 
 /**
+ * Use chrome.storage.local if we are in an app
+ */
+
+var storage;
+
+if (typeof chrome !== 'undefined' && typeof chrome.storage !== 'undefined')
+  storage = chrome.storage.local;
+else
+  storage = window.localStorage;
+
+/**
  * Colors.
  */
 
@@ -10350,10 +10364,10 @@ function formatArgs() {
  */
 
 function log() {
-  // This hackery is required for IE8,
-  // where the `console.log` function doesn't have 'apply'
-  return 'object' == typeof console
-    && 'function' == typeof console.log
+  // this hackery is required for IE8/9, where
+  // the `console.log` function doesn't have 'apply'
+  return 'object' === typeof console
+    && console.log
     && Function.prototype.apply.call(console.log, console, arguments);
 }
 
@@ -10367,9 +10381,9 @@ function log() {
 function save(namespaces) {
   try {
     if (null == namespaces) {
-      localStorage.removeItem('debug');
+      storage.removeItem('debug');
     } else {
-      localStorage.debug = namespaces;
+      storage.debug = namespaces;
     }
   } catch(e) {}
 }
@@ -10384,7 +10398,7 @@ function save(namespaces) {
 function load() {
   var r;
   try {
-    r = localStorage.debug;
+    r = storage.debug;
   } catch(e) {}
   return r;
 }
@@ -10850,7 +10864,7 @@ function Promise(resolver) {
     return new Promise(resolver);
   }
   if (typeof resolver !== 'function') {
-    throw new TypeError('reslover must be a function');
+    throw new TypeError('resolver must be a function');
   }
   this.state = states.PENDING;
   this.queue = [];
@@ -12308,45 +12322,45 @@ utils.inherits(NotFoundError, Error);
 }).call(this,_dereq_('_process'))
 },{"./create-view":58,"./evalfunc":59,"./taskqueue":86,"./utils":88,"_process":34,"pouchdb-collate":81}],61:[function(_dereq_,module,exports){
 module.exports=_dereq_(27)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/argsarray/index.js":27}],62:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/argsarray/index.js":27}],62:[function(_dereq_,module,exports){
 module.exports=_dereq_(38)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/inherits/inherits_browser.js":38}],63:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/inherits/inherits_browser.js":38}],63:[function(_dereq_,module,exports){
 module.exports=_dereq_(39)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/INTERNAL.js":39}],64:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/lib/INTERNAL.js":39}],64:[function(_dereq_,module,exports){
 module.exports=_dereq_(40)
-},{"./INTERNAL":63,"./handlers":65,"./promise":67,"./reject":70,"./resolve":71,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/all.js":40}],65:[function(_dereq_,module,exports){
+},{"./INTERNAL":63,"./handlers":65,"./promise":67,"./reject":70,"./resolve":71,"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/lib/all.js":40}],65:[function(_dereq_,module,exports){
 module.exports=_dereq_(41)
-},{"./resolveThenable":72,"./states":73,"./tryCatch":74,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/handlers.js":41}],66:[function(_dereq_,module,exports){
+},{"./resolveThenable":72,"./states":73,"./tryCatch":74,"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/lib/handlers.js":41}],66:[function(_dereq_,module,exports){
 module.exports=_dereq_(42)
-},{"./all":64,"./promise":67,"./race":69,"./reject":70,"./resolve":71,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/index.js":42}],67:[function(_dereq_,module,exports){
+},{"./all":64,"./promise":67,"./race":69,"./reject":70,"./resolve":71,"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/lib/index.js":42}],67:[function(_dereq_,module,exports){
 module.exports=_dereq_(43)
-},{"./INTERNAL":63,"./queueItem":68,"./resolveThenable":72,"./states":73,"./unwrap":75,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/promise.js":43}],68:[function(_dereq_,module,exports){
+},{"./INTERNAL":63,"./queueItem":68,"./resolveThenable":72,"./states":73,"./unwrap":75,"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/lib/promise.js":43}],68:[function(_dereq_,module,exports){
 module.exports=_dereq_(44)
-},{"./handlers":65,"./unwrap":75,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/queueItem.js":44}],69:[function(_dereq_,module,exports){
+},{"./handlers":65,"./unwrap":75,"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/lib/queueItem.js":44}],69:[function(_dereq_,module,exports){
 module.exports=_dereq_(45)
-},{"./INTERNAL":63,"./handlers":65,"./promise":67,"./reject":70,"./resolve":71,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/race.js":45}],70:[function(_dereq_,module,exports){
+},{"./INTERNAL":63,"./handlers":65,"./promise":67,"./reject":70,"./resolve":71,"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/lib/race.js":45}],70:[function(_dereq_,module,exports){
 module.exports=_dereq_(46)
-},{"./INTERNAL":63,"./handlers":65,"./promise":67,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/reject.js":46}],71:[function(_dereq_,module,exports){
+},{"./INTERNAL":63,"./handlers":65,"./promise":67,"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/lib/reject.js":46}],71:[function(_dereq_,module,exports){
 module.exports=_dereq_(47)
-},{"./INTERNAL":63,"./handlers":65,"./promise":67,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/resolve.js":47}],72:[function(_dereq_,module,exports){
+},{"./INTERNAL":63,"./handlers":65,"./promise":67,"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/lib/resolve.js":47}],72:[function(_dereq_,module,exports){
 module.exports=_dereq_(48)
-},{"./handlers":65,"./tryCatch":74,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/resolveThenable.js":48}],73:[function(_dereq_,module,exports){
+},{"./handlers":65,"./tryCatch":74,"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/lib/resolveThenable.js":48}],73:[function(_dereq_,module,exports){
 module.exports=_dereq_(49)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/states.js":49}],74:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/lib/states.js":49}],74:[function(_dereq_,module,exports){
 module.exports=_dereq_(50)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/tryCatch.js":50}],75:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/lib/tryCatch.js":50}],75:[function(_dereq_,module,exports){
 module.exports=_dereq_(51)
-},{"./handlers":65,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/lib/unwrap.js":51,"immediate":76}],76:[function(_dereq_,module,exports){
+},{"./handlers":65,"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/lib/unwrap.js":51,"immediate":76}],76:[function(_dereq_,module,exports){
 module.exports=_dereq_(52)
-},{"./messageChannel":77,"./mutation.js":78,"./nextTick":28,"./stateChange":79,"./timeout":80,"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/node_modules/immediate/lib/index.js":52}],77:[function(_dereq_,module,exports){
+},{"./messageChannel":77,"./mutation.js":78,"./nextTick":28,"./stateChange":79,"./timeout":80,"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/node_modules/immediate/lib/index.js":52}],77:[function(_dereq_,module,exports){
 module.exports=_dereq_(53)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/node_modules/immediate/lib/messageChannel.js":53}],78:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/node_modules/immediate/lib/messageChannel.js":53}],78:[function(_dereq_,module,exports){
 module.exports=_dereq_(54)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/node_modules/immediate/lib/mutation.js":54}],79:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/node_modules/immediate/lib/mutation.js":54}],79:[function(_dereq_,module,exports){
 module.exports=_dereq_(55)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/node_modules/immediate/lib/stateChange.js":55}],80:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/node_modules/immediate/lib/stateChange.js":55}],80:[function(_dereq_,module,exports){
 module.exports=_dereq_(56)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/lie/node_modules/immediate/lib/timeout.js":56}],81:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/lie/node_modules/immediate/lib/timeout.js":56}],81:[function(_dereq_,module,exports){
 'use strict';
 
 var MIN_MAGNITUDE = -324; // verified by -Number.MIN_VALUE
@@ -12774,7 +12788,7 @@ exports.intToDecimalForm = function (int) {
 };
 },{}],83:[function(_dereq_,module,exports){
 module.exports=_dereq_(57)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/pouchdb-extend/index.js":57}],84:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/pouchdb-extend/index.js":57}],84:[function(_dereq_,module,exports){
 (function (global){
 'use strict';
 
@@ -13609,7 +13623,7 @@ exports.MD5 = function (string) {
 }).call(this,_dereq_('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"_process":34,"argsarray":61,"crypto":28,"inherits":62,"lie":66,"pouchdb-extend":83,"spark-md5":85}],89:[function(_dereq_,module,exports){
 module.exports=_dereq_(85)
-},{"/Users/robertkeizer/src/pouchdb-quipped/node_modules/pouchdb-mapreduce/node_modules/spark-md5/spark-md5.js":85}],90:[function(_dereq_,module,exports){
+},{"/home/diana/Documents/Quipped/pouchdb/node_modules/pouchdb-mapreduce/node_modules/spark-md5/spark-md5.js":85}],90:[function(_dereq_,module,exports){
 'use strict';
 
 /**
