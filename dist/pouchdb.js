@@ -11912,8 +11912,6 @@ function updateViewInQueue(view) {
         limit: CHANGES_BATCH_SIZE
       }).on('complete', function (response) {
         var results = response.results;
-        console.log("results length");
-        console.log(results.length);
         if (!results.length) {
           return complete();
         }
