@@ -3492,7 +3492,7 @@ function argsArray(fun) {
 
 },{}],16:[function(_dereq_,module,exports){
 module.exports=_dereq_(15)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/lib/_empty.js":15}],17:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/lib/_empty.js":15}],17:[function(_dereq_,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -8247,7 +8247,7 @@ var storage;
 if (typeof chrome !== 'undefined' && typeof chrome.storage !== 'undefined')
   storage = chrome.storage.local;
 else
-  storage = window.localStorage;
+  storage = localstorage();
 
 /**
  * Colors.
@@ -8382,6 +8382,23 @@ function load() {
  */
 
 exports.enable(load());
+
+/**
+ * Localstorage attempts to return the localstorage.
+ *
+ * This is necessary because safari throws
+ * when a user disables cookies/localstorage
+ * and you attempt to access it.
+ *
+ * @return {LocalStorage}
+ * @api private
+ */
+
+function localstorage(){
+  try {
+    return window.localStorage;
+  } catch (e) {}
+}
 
 },{"./debug":41}],41:[function(_dereq_,module,exports){
 
@@ -8623,13 +8640,15 @@ module.exports = function(val, options){
  */
 
 function parse(str) {
-  var match = /^((?:\d+)?\.?\d+) *(ms|seconds?|s|minutes?|m|hours?|h|days?|d|years?|y)?$/i.exec(str);
+  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(str);
   if (!match) return;
   var n = parseFloat(match[1]);
   var type = (match[2] || 'ms').toLowerCase();
   switch (type) {
     case 'years':
     case 'year':
+    case 'yrs':
+    case 'yr':
     case 'y':
       return n * y;
     case 'days':
@@ -8638,16 +8657,26 @@ function parse(str) {
       return n * d;
     case 'hours':
     case 'hour':
+    case 'hrs':
+    case 'hr':
     case 'h':
       return n * h;
     case 'minutes':
     case 'minute':
+    case 'mins':
+    case 'min':
     case 'm':
       return n * m;
     case 'seconds':
     case 'second':
+    case 'secs':
+    case 'sec':
     case 's':
       return n * s;
+    case 'milliseconds':
+    case 'millisecond':
+    case 'msecs':
+    case 'msec':
     case 'ms':
       return n;
   }
@@ -8722,7 +8751,6 @@ function Deque(capacity) {
     this._capacity = getCapacity(capacity);
     this._length = 0;
     this._front = 0;
-    this._makeCapacity();
     if (isArray(capacity)) {
         var len = capacity.length;
         for (var i = 0; i < len; ++i) {
@@ -8886,9 +8914,14 @@ Deque.prototype.isEmpty = function Deque$isEmpty() {
 };
 
 Deque.prototype.clear = function Deque$clear() {
+    var len = this._length;
+    var front = this._front;
+    var capacity = this._capacity;
+    for (var j = 0; j < len; ++j) {
+        this[(front + j) & (capacity - 1)] = void 0;
+    }
     this._length = 0;
     this._front = 0;
-    this._makeCapacity();
 };
 
 Deque.prototype.toString = function Deque$toString() {
@@ -8913,13 +8946,6 @@ Object.defineProperty(Deque.prototype, "length", {
     }
 });
 
-Deque.prototype._makeCapacity = function Deque$_makeCapacity() {
-    var len = this._capacity;
-    for (var i = 0; i < len; ++i) {
-        this[i] = void 0;
-    }
-};
-
 Deque.prototype._checkCapacity = function Deque$_checkCapacity(size) {
     if (this._capacity < size) {
         this._resizeTo(getCapacity(this._capacity * 1.5 + 16));
@@ -8927,32 +8953,23 @@ Deque.prototype._checkCapacity = function Deque$_checkCapacity(size) {
 };
 
 Deque.prototype._resizeTo = function Deque$_resizeTo(capacity) {
-    var oldFront = this._front;
     var oldCapacity = this._capacity;
-    var oldDeque = new Array(oldCapacity);
-    var length = this._length;
-
-    arrayCopy(this, 0, oldDeque, 0, oldCapacity);
     this._capacity = capacity;
-    this._makeCapacity();
-    this._front = 0;
-    if (oldFront + length <= oldCapacity) {
-        arrayCopy(oldDeque, oldFront, this, 0, length);
-    } else {        var lengthBeforeWrapping =
-            length - ((oldFront + length) & (oldCapacity - 1));
-
-        arrayCopy(oldDeque, oldFront, this, 0, lengthBeforeWrapping);
-        arrayCopy(oldDeque, 0, this, lengthBeforeWrapping,
-            length - lengthBeforeWrapping);
+    var front = this._front;
+    var length = this._length;
+    if (front + length > oldCapacity) {
+        var moveItemsCount = (front + length) & (oldCapacity - 1);
+        arrayMove(this, 0, this, oldCapacity, moveItemsCount);
     }
 };
 
 
 var isArray = Array.isArray;
 
-function arrayCopy(src, srcIndex, dst, dstIndex, len) {
+function arrayMove(src, srcIndex, dst, dstIndex, len) {
     for (var j = 0; j < len; ++j) {
         dst[j + dstIndex] = src[j + srcIndex];
+        src[j + srcIndex] = void 0;
     }
 }
 
@@ -11612,11 +11629,11 @@ var satifies = exports.satisfies = function (key, range) {
 
 },{}],66:[function(_dereq_,module,exports){
 module.exports=_dereq_(54)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/has-keys.js":54}],67:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/level-js/node_modules/xtend/has-keys.js":54}],67:[function(_dereq_,module,exports){
 arguments[4][55][0].apply(exports,arguments)
-},{"./has-keys":66,"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/index.js":55,"object-keys":68}],68:[function(_dereq_,module,exports){
+},{"./has-keys":66,"/Users/dianacarrier/Documents/pouchdb/node_modules/level-js/node_modules/xtend/index.js":55,"object-keys":68}],68:[function(_dereq_,module,exports){
 arguments[4][57][0].apply(exports,arguments)
-},{"./shim":71,"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/index.js":57}],69:[function(_dereq_,module,exports){
+},{"./shim":71,"/Users/dianacarrier/Documents/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/index.js":57}],69:[function(_dereq_,module,exports){
 
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
@@ -13978,11 +13995,11 @@ module.exports = DeferredLevelDOWN
 }).call(this,_dereq_('_process'),_dereq_("buffer").Buffer)
 },{"_process":24,"abstract-leveldown":83,"buffer":17,"util":39}],81:[function(_dereq_,module,exports){
 module.exports=_dereq_(46)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/abstract-chained-batch.js":46,"_process":24}],82:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/abstract-chained-batch.js":46,"_process":24}],82:[function(_dereq_,module,exports){
 module.exports=_dereq_(47)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/abstract-iterator.js":47,"_process":24}],83:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/abstract-iterator.js":47,"_process":24}],83:[function(_dereq_,module,exports){
 module.exports=_dereq_(48)
-},{"./abstract-chained-batch":81,"./abstract-iterator":82,"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/abstract-leveldown.js":48,"_process":24,"buffer":17,"xtend":96}],84:[function(_dereq_,module,exports){
+},{"./abstract-chained-batch":81,"./abstract-iterator":82,"/Users/dianacarrier/Documents/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/abstract-leveldown.js":48,"_process":24,"buffer":17,"xtend":96}],84:[function(_dereq_,module,exports){
 var prr = _dereq_('prr')
 
 function init (type, message, cause) {
@@ -14041,432 +14058,314 @@ module.exports = function (errno) {
 
 },{"prr":86}],85:[function(_dereq_,module,exports){
 var all = module.exports.all = [
- {
-  "errno": -1,
-  "code": "UNKNOWN",
-  "description": "unknown error"
- },
- {
-  "errno": 0,
-  "code": "OK",
-  "description": "success"
- },
- {
-  "errno": 1,
-  "code": "EOF",
-  "description": "end of file"
- },
- {
-  "errno": 2,
-  "code": "EADDRINFO",
-  "description": "getaddrinfo error"
- },
- {
-  "errno": 3,
-  "code": "EACCES",
-  "description": "permission denied"
- },
- {
-  "errno": 4,
-  "code": "EAGAIN",
-  "description": "resource temporarily unavailable"
- },
- {
-  "errno": 5,
-  "code": "EADDRINUSE",
-  "description": "address already in use"
- },
- {
-  "errno": 6,
-  "code": "EADDRNOTAVAIL",
-  "description": "address not available"
- },
- {
-  "errno": 7,
-  "code": "EAFNOSUPPORT",
-  "description": "address family not supported"
- },
- {
-  "errno": 8,
-  "code": "EALREADY",
-  "description": "connection already in progress"
- },
- {
-  "errno": 9,
-  "code": "EBADF",
-  "description": "bad file descriptor"
- },
- {
-  "errno": 10,
-  "code": "EBUSY",
-  "description": "resource busy or locked"
- },
- {
-  "errno": 11,
-  "code": "ECONNABORTED",
-  "description": "software caused connection abort"
- },
- {
-  "errno": 12,
-  "code": "ECONNREFUSED",
-  "description": "connection refused"
- },
- {
-  "errno": 13,
-  "code": "ECONNRESET",
-  "description": "connection reset by peer"
- },
- {
-  "errno": 14,
-  "code": "EDESTADDRREQ",
-  "description": "destination address required"
- },
- {
-  "errno": 15,
-  "code": "EFAULT",
-  "description": "bad address in system call argument"
- },
- {
-  "errno": 16,
-  "code": "EHOSTUNREACH",
-  "description": "host is unreachable"
- },
- {
-  "errno": 17,
-  "code": "EINTR",
-  "description": "interrupted system call"
- },
- {
-  "errno": 18,
-  "code": "EINVAL",
-  "description": "invalid argument"
- },
- {
-  "errno": 19,
-  "code": "EISCONN",
-  "description": "socket is already connected"
- },
- {
-  "errno": 20,
-  "code": "EMFILE",
-  "description": "too many open files"
- },
- {
-  "errno": 21,
-  "code": "EMSGSIZE",
-  "description": "message too long"
- },
- {
-  "errno": 22,
-  "code": "ENETDOWN",
-  "description": "network is down"
- },
- {
-  "errno": 23,
-  "code": "ENETUNREACH",
-  "description": "network is unreachable"
- },
- {
-  "errno": 24,
-  "code": "ENFILE",
-  "description": "file table overflow"
- },
- {
-  "errno": 25,
-  "code": "ENOBUFS",
-  "description": "no buffer space available"
- },
- {
-  "errno": 26,
-  "code": "ENOMEM",
-  "description": "not enough memory"
- },
- {
-  "errno": 27,
-  "code": "ENOTDIR",
-  "description": "not a directory"
- },
- {
-  "errno": 28,
-  "code": "EISDIR",
-  "description": "illegal operation on a directory"
- },
- {
-  "errno": 29,
-  "code": "ENONET",
-  "description": "machine is not on the network"
- },
- {
-  "errno": 31,
-  "code": "ENOTCONN",
-  "description": "socket is not connected"
- },
- {
-  "errno": 32,
-  "code": "ENOTSOCK",
-  "description": "socket operation on non-socket"
- },
- {
-  "errno": 33,
-  "code": "ENOTSUP",
-  "description": "operation not supported on socket"
- },
- {
-  "errno": 34,
-  "code": "ENOENT",
-  "description": "no such file or directory"
- },
- {
-  "errno": 35,
-  "code": "ENOSYS",
-  "description": "function not implemented"
- },
- {
-  "errno": 36,
-  "code": "EPIPE",
-  "description": "broken pipe"
- },
- {
-  "errno": 37,
-  "code": "EPROTO",
-  "description": "protocol error"
- },
- {
-  "errno": 38,
-  "code": "EPROTONOSUPPORT",
-  "description": "protocol not supported"
- },
- {
-  "errno": 39,
-  "code": "EPROTOTYPE",
-  "description": "protocol wrong type for socket"
- },
- {
-  "errno": 40,
-  "code": "ETIMEDOUT",
-  "description": "connection timed out"
- },
- {
-  "errno": 41,
-  "code": "ECHARSET",
-  "description": "invalid Unicode character"
- },
- {
-  "errno": 42,
-  "code": "EAIFAMNOSUPPORT",
-  "description": "address family for hostname not supported"
- },
- {
-  "errno": 44,
-  "code": "EAISERVICE",
-  "description": "servname not supported for ai_socktype"
- },
- {
-  "errno": 45,
-  "code": "EAISOCKTYPE",
-  "description": "ai_socktype not supported"
- },
- {
-  "errno": 46,
-  "code": "ESHUTDOWN",
-  "description": "cannot send after transport endpoint shutdown"
- },
- {
-  "errno": 47,
-  "code": "EEXIST",
-  "description": "file already exists"
- },
- {
-  "errno": 48,
-  "code": "ESRCH",
-  "description": "no such process"
- },
- {
-  "errno": 49,
-  "code": "ENAMETOOLONG",
-  "description": "name too long"
- },
- {
-  "errno": 50,
-  "code": "EPERM",
-  "description": "operation not permitted"
- },
- {
-  "errno": 51,
-  "code": "ELOOP",
-  "description": "too many symbolic links encountered"
- },
- {
-  "errno": 52,
-  "code": "EXDEV",
-  "description": "cross-device link not permitted"
- },
- {
-  "errno": 53,
-  "code": "ENOTEMPTY",
-  "description": "directory not empty"
- },
- {
-  "errno": 54,
-  "code": "ENOSPC",
-  "description": "no space left on device"
- },
- {
-  "errno": 55,
-  "code": "EIO",
-  "description": "i/o error"
- },
- {
-  "errno": 56,
-  "code": "EROFS",
-  "description": "read-only file system"
- },
- {
-  "errno": 57,
-  "code": "ENODEV",
-  "description": "no such device"
- },
- {
-  "errno": 58,
-  "code": "ESPIPE",
-  "description": "invalid seek"
- },
- {
-  "errno": 59,
-  "code": "ECANCELED",
-  "description": "operation canceled"
- }
+  {
+    errno: -1,
+    code: 'UNKNOWN',
+    description: 'unknown error'
+  },
+  {
+    errno: 0,
+    code: 'OK',
+    description: 'success'
+  },
+  {
+    errno: 1,
+    code: 'EOF',
+    description: 'end of file'
+  },
+  {
+    errno: 2,
+    code: 'EADDRINFO',
+    description: 'getaddrinfo error'
+  },
+  {
+    errno: 3,
+    code: 'EACCES',
+    description: 'permission denied'
+  },
+  {
+    errno: 4,
+    code: 'EAGAIN',
+    description: 'resource temporarily unavailable'
+  },
+  {
+    errno: 5,
+    code: 'EADDRINUSE',
+    description: 'address already in use'
+  },
+  {
+    errno: 6,
+    code: 'EADDRNOTAVAIL',
+    description: 'address not available'
+  },
+  {
+    errno: 7,
+    code: 'EAFNOSUPPORT',
+    description: 'address family not supported'
+  },
+  {
+    errno: 8,
+    code: 'EALREADY',
+    description: 'connection already in progress'
+  },
+  {
+    errno: 9,
+    code: 'EBADF',
+    description: 'bad file descriptor'
+  },
+  {
+    errno: 10,
+    code: 'EBUSY',
+    description: 'resource busy or locked'
+  },
+  {
+    errno: 11,
+    code: 'ECONNABORTED',
+    description: 'software caused connection abort'
+  },
+  {
+    errno: 12,
+    code: 'ECONNREFUSED',
+    description: 'connection refused'
+  },
+  {
+    errno: 13,
+    code: 'ECONNRESET',
+    description: 'connection reset by peer'
+  },
+  {
+    errno: 14,
+    code: 'EDESTADDRREQ',
+    description: 'destination address required'
+  },
+  {
+    errno: 15,
+    code: 'EFAULT',
+    description: 'bad address in system call argument'
+  },
+  {
+    errno: 16,
+    code: 'EHOSTUNREACH',
+    description: 'host is unreachable'
+  },
+  {
+    errno: 17,
+    code: 'EINTR',
+    description: 'interrupted system call'
+  },
+  {
+    errno: 18,
+    code: 'EINVAL',
+    description: 'invalid argument'
+  },
+  {
+    errno: 19,
+    code: 'EISCONN',
+    description: 'socket is already connected'
+  },
+  {
+    errno: 20,
+    code: 'EMFILE',
+    description: 'too many open files'
+  },
+  {
+    errno: 21,
+    code: 'EMSGSIZE',
+    description: 'message too long'
+  },
+  {
+    errno: 22,
+    code: 'ENETDOWN',
+    description: 'network is down'
+  },
+  {
+    errno: 23,
+    code: 'ENETUNREACH',
+    description: 'network is unreachable'
+  },
+  {
+    errno: 24,
+    code: 'ENFILE',
+    description: 'file table overflow'
+  },
+  {
+    errno: 25,
+    code: 'ENOBUFS',
+    description: 'no buffer space available'
+  },
+  {
+    errno: 26,
+    code: 'ENOMEM',
+    description: 'not enough memory'
+  },
+  {
+    errno: 27,
+    code: 'ENOTDIR',
+    description: 'not a directory'
+  },
+  {
+    errno: 28,
+    code: 'EISDIR',
+    description: 'illegal operation on a directory'
+  },
+  {
+    errno: 29,
+    code: 'ENONET',
+    description: 'machine is not on the network'
+  },
+  {
+    errno: 31,
+    code: 'ENOTCONN',
+    description: 'socket is not connected'
+  },
+  {
+    errno: 32,
+    code: 'ENOTSOCK',
+    description: 'socket operation on non-socket'
+  },
+  {
+    errno: 33,
+    code: 'ENOTSUP',
+    description: 'operation not supported on socket'
+  },
+  {
+    errno: 34,
+    code: 'ENOENT',
+    description: 'no such file or directory'
+  },
+  {
+    errno: 35,
+    code: 'ENOSYS',
+    description: 'function not implemented'
+  },
+  {
+    errno: 36,
+    code: 'EPIPE',
+    description: 'broken pipe'
+  },
+  {
+    errno: 37,
+    code: 'EPROTO',
+    description: 'protocol error'
+  },
+  {
+    errno: 38,
+    code: 'EPROTONOSUPPORT',
+    description: 'protocol not supported'
+  },
+  {
+    errno: 39,
+    code: 'EPROTOTYPE',
+    description: 'protocol wrong type for socket'
+  },
+  {
+    errno: 40,
+    code: 'ETIMEDOUT',
+    description: 'connection timed out'
+  },
+  {
+    errno: 41,
+    code: 'ECHARSET',
+    description: 'invalid Unicode character'
+  },
+  {
+    errno: 42,
+    code: 'EAIFAMNOSUPPORT',
+    description: 'address family for hostname not supported'
+  },
+  {
+    errno: 44,
+    code: 'EAISERVICE',
+    description: 'servname not supported for ai_socktype'
+  },
+  {
+    errno: 45,
+    code: 'EAISOCKTYPE',
+    description: 'ai_socktype not supported'
+  },
+  {
+    errno: 46,
+    code: 'ESHUTDOWN',
+    description: 'cannot send after transport endpoint shutdown'
+  },
+  {
+    errno: 47,
+    code: 'EEXIST',
+    description: 'file already exists'
+  },
+  {
+    errno: 48,
+    code: 'ESRCH',
+    description: 'no such process'
+  },
+  {
+    errno: 49,
+    code: 'ENAMETOOLONG',
+    description: 'name too long'
+  },
+  {
+    errno: 50,
+    code: 'EPERM',
+    description: 'operation not permitted'
+  },
+  {
+    errno: 51,
+    code: 'ELOOP',
+    description: 'too many symbolic links encountered'
+  },
+  {
+    errno: 52,
+    code: 'EXDEV',
+    description: 'cross-device link not permitted'
+  },
+  {
+    errno: 53,
+    code: 'ENOTEMPTY',
+    description: 'directory not empty'
+  },
+  {
+    errno: 54,
+    code: 'ENOSPC',
+    description: 'no space left on device'
+  },
+  {
+    errno: 55,
+    code: 'EIO',
+    description: 'i/o error'
+  },
+  {
+    errno: 56,
+    code: 'EROFS',
+    description: 'read-only file system'
+  },
+  {
+    errno: 57,
+    code: 'ENODEV',
+    description: 'no such device'
+  },
+  {
+    errno: 58,
+    code: 'ESPIPE',
+    description: 'invalid seek'
+  },
+  {
+    errno: 59,
+    code: 'ECANCELED',
+    description: 'operation canceled'
+  }
 ]
 
+module.exports.errno = {}
+module.exports.code = {}
 
-module.exports.errno = {
-    '-1': all[0]
-  , '0': all[1]
-  , '1': all[2]
-  , '2': all[3]
-  , '3': all[4]
-  , '4': all[5]
-  , '5': all[6]
-  , '6': all[7]
-  , '7': all[8]
-  , '8': all[9]
-  , '9': all[10]
-  , '10': all[11]
-  , '11': all[12]
-  , '12': all[13]
-  , '13': all[14]
-  , '14': all[15]
-  , '15': all[16]
-  , '16': all[17]
-  , '17': all[18]
-  , '18': all[19]
-  , '19': all[20]
-  , '20': all[21]
-  , '21': all[22]
-  , '22': all[23]
-  , '23': all[24]
-  , '24': all[25]
-  , '25': all[26]
-  , '26': all[27]
-  , '27': all[28]
-  , '28': all[29]
-  , '29': all[30]
-  , '31': all[31]
-  , '32': all[32]
-  , '33': all[33]
-  , '34': all[34]
-  , '35': all[35]
-  , '36': all[36]
-  , '37': all[37]
-  , '38': all[38]
-  , '39': all[39]
-  , '40': all[40]
-  , '41': all[41]
-  , '42': all[42]
-  , '44': all[43]
-  , '45': all[44]
-  , '46': all[45]
-  , '47': all[46]
-  , '48': all[47]
-  , '49': all[48]
-  , '50': all[49]
-  , '51': all[50]
-  , '52': all[51]
-  , '53': all[52]
-  , '54': all[53]
-  , '55': all[54]
-  , '56': all[55]
-  , '57': all[56]
-  , '58': all[57]
-  , '59': all[58]
-}
+all.forEach(function (error) {
+  module.exports.errno[error.errno] = error
+  module.exports.code[error.code] = error
+})
 
-
-module.exports.code = {
-    'UNKNOWN': all[0]
-  , 'OK': all[1]
-  , 'EOF': all[2]
-  , 'EADDRINFO': all[3]
-  , 'EACCES': all[4]
-  , 'EAGAIN': all[5]
-  , 'EADDRINUSE': all[6]
-  , 'EADDRNOTAVAIL': all[7]
-  , 'EAFNOSUPPORT': all[8]
-  , 'EALREADY': all[9]
-  , 'EBADF': all[10]
-  , 'EBUSY': all[11]
-  , 'ECONNABORTED': all[12]
-  , 'ECONNREFUSED': all[13]
-  , 'ECONNRESET': all[14]
-  , 'EDESTADDRREQ': all[15]
-  , 'EFAULT': all[16]
-  , 'EHOSTUNREACH': all[17]
-  , 'EINTR': all[18]
-  , 'EINVAL': all[19]
-  , 'EISCONN': all[20]
-  , 'EMFILE': all[21]
-  , 'EMSGSIZE': all[22]
-  , 'ENETDOWN': all[23]
-  , 'ENETUNREACH': all[24]
-  , 'ENFILE': all[25]
-  , 'ENOBUFS': all[26]
-  , 'ENOMEM': all[27]
-  , 'ENOTDIR': all[28]
-  , 'EISDIR': all[29]
-  , 'ENONET': all[30]
-  , 'ENOTCONN': all[31]
-  , 'ENOTSOCK': all[32]
-  , 'ENOTSUP': all[33]
-  , 'ENOENT': all[34]
-  , 'ENOSYS': all[35]
-  , 'EPIPE': all[36]
-  , 'EPROTO': all[37]
-  , 'EPROTONOSUPPORT': all[38]
-  , 'EPROTOTYPE': all[39]
-  , 'ETIMEDOUT': all[40]
-  , 'ECHARSET': all[41]
-  , 'EAIFAMNOSUPPORT': all[42]
-  , 'EAISERVICE': all[43]
-  , 'EAISOCKTYPE': all[44]
-  , 'ESHUTDOWN': all[45]
-  , 'EEXIST': all[46]
-  , 'ESRCH': all[47]
-  , 'ENAMETOOLONG': all[48]
-  , 'EPERM': all[49]
-  , 'ELOOP': all[50]
-  , 'EXDEV': all[51]
-  , 'ENOTEMPTY': all[52]
-  , 'ENOSPC': all[53]
-  , 'EIO': all[54]
-  , 'EROFS': all[55]
-  , 'ENODEV': all[56]
-  , 'ESPIPE': all[57]
-  , 'ECANCELED': all[58]
-}
-
-
-module.exports.custom = _dereq_("./custom")(module.exports)
+module.exports.custom = _dereq_('./custom')(module.exports)
 module.exports.create = module.exports.custom.createError
+
 },{"./custom":84}],86:[function(_dereq_,module,exports){
 /*!
   * prr
@@ -14533,25 +14432,25 @@ module.exports.create = module.exports.custom.createError
 })
 },{}],87:[function(_dereq_,module,exports){
 module.exports=_dereq_(26)
-},{"./_stream_readable":89,"./_stream_writable":91,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_duplex.js":26,"_process":24,"core-util-is":92,"inherits":44}],88:[function(_dereq_,module,exports){
+},{"./_stream_readable":89,"./_stream_writable":91,"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_duplex.js":26,"_process":24,"core-util-is":92,"inherits":44}],88:[function(_dereq_,module,exports){
 module.exports=_dereq_(27)
-},{"./_stream_transform":90,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_passthrough.js":27,"core-util-is":92,"inherits":44}],89:[function(_dereq_,module,exports){
+},{"./_stream_transform":90,"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_passthrough.js":27,"core-util-is":92,"inherits":44}],89:[function(_dereq_,module,exports){
 module.exports=_dereq_(28)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_readable.js":28,"_process":24,"buffer":17,"core-util-is":92,"events":21,"inherits":44,"isarray":93,"stream":36,"string_decoder/":94}],90:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_readable.js":28,"_process":24,"buffer":17,"core-util-is":92,"events":21,"inherits":44,"isarray":93,"stream":36,"string_decoder/":94}],90:[function(_dereq_,module,exports){
 module.exports=_dereq_(29)
-},{"./_stream_duplex":87,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_transform.js":29,"core-util-is":92,"inherits":44}],91:[function(_dereq_,module,exports){
+},{"./_stream_duplex":87,"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_transform.js":29,"core-util-is":92,"inherits":44}],91:[function(_dereq_,module,exports){
 module.exports=_dereq_(30)
-},{"./_stream_duplex":87,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_writable.js":30,"_process":24,"buffer":17,"core-util-is":92,"inherits":44,"stream":36}],92:[function(_dereq_,module,exports){
+},{"./_stream_duplex":87,"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_writable.js":30,"_process":24,"buffer":17,"core-util-is":92,"inherits":44,"stream":36}],92:[function(_dereq_,module,exports){
 module.exports=_dereq_(31)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/node_modules/core-util-is/lib/util.js":31,"buffer":17}],93:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/readable-stream/node_modules/core-util-is/lib/util.js":31,"buffer":17}],93:[function(_dereq_,module,exports){
 module.exports=_dereq_(22)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/isarray/index.js":22}],94:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/isarray/index.js":22}],94:[function(_dereq_,module,exports){
 module.exports=_dereq_(37)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/string_decoder/index.js":37,"buffer":17}],95:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/string_decoder/index.js":37,"buffer":17}],95:[function(_dereq_,module,exports){
 module.exports=_dereq_(33)
-},{"./lib/_stream_duplex.js":87,"./lib/_stream_passthrough.js":88,"./lib/_stream_readable.js":89,"./lib/_stream_transform.js":90,"./lib/_stream_writable.js":91,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/readable.js":33,"stream":36}],96:[function(_dereq_,module,exports){
+},{"./lib/_stream_duplex.js":87,"./lib/_stream_passthrough.js":88,"./lib/_stream_readable.js":89,"./lib/_stream_transform.js":90,"./lib/_stream_writable.js":91,"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/readable-stream/readable.js":33,"stream":36}],96:[function(_dereq_,module,exports){
 module.exports=_dereq_(49)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/node_modules/xtend/index.js":49}],97:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/level-js/node_modules/abstract-leveldown/node_modules/xtend/index.js":49}],97:[function(_dereq_,module,exports){
 module.exports={
   "name": "levelup",
   "description": "Fast & simple storage - a Node.js-style LevelDB wrapper",
@@ -14682,7 +14581,7 @@ module.exports={
   },
   "_id": "levelup@0.18.6",
   "_shasum": "e6a01cb089616c8ecc0291c2a9bd3f0c44e3e5eb",
-  "_from": "levelup@>=0.18.4 <0.19.0",
+  "_from": "levelup@>=0.18.4-0 <0.19.0-0",
   "_npmVersion": "1.4.14",
   "_npmUser": {
     "name": "rvagg",
@@ -15056,22 +14955,38 @@ var types = [
   _dereq_('./timeout')
 ];
 var draining;
+var currentQueue;
+var queueIndex = -1;
 var queue = [];
+function cleanUpNextTick() {
+    draining = false;
+    if (currentQueue && currentQueue.length) {
+      queue = currentQueue.concat(queue);
+    } else {
+      queueIndex = -1;
+    }
+    if (queue.length) {
+      nextTick();
+    }
+}
+
 //named nextTick for less confusing stack traces
 function nextTick() {
   draining = true;
-  var i, oldQueue;
   var len = queue.length;
+  var timeout = setTimeout(cleanUpNextTick);
   while (len) {
-    oldQueue = queue;
+    currentQueue = queue;
     queue = [];
-    i = -1;
-    while (++i < len) {
-      oldQueue[i]();
+    while (++queueIndex < len) {
+      currentQueue[queueIndex]();
     }
+    queueIndex = -1;
     len = queue.length;
   }
+  queueIndex = -1;
   draining = false;
+  clearTimeout(timeout);
 }
 var scheduleDrain;
 var i = -1;
@@ -15956,33 +15871,33 @@ module.exports = extend;
 
 },{}],118:[function(_dereq_,module,exports){
 module.exports=_dereq_(26)
-},{"./_stream_readable":119,"./_stream_writable":121,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_duplex.js":26,"_process":24,"core-util-is":122,"inherits":44}],119:[function(_dereq_,module,exports){
+},{"./_stream_readable":119,"./_stream_writable":121,"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_duplex.js":26,"_process":24,"core-util-is":122,"inherits":44}],119:[function(_dereq_,module,exports){
 module.exports=_dereq_(28)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_readable.js":28,"_process":24,"buffer":17,"core-util-is":122,"events":21,"inherits":44,"isarray":123,"stream":36,"string_decoder/":124}],120:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_readable.js":28,"_process":24,"buffer":17,"core-util-is":122,"events":21,"inherits":44,"isarray":123,"stream":36,"string_decoder/":124}],120:[function(_dereq_,module,exports){
 module.exports=_dereq_(29)
-},{"./_stream_duplex":118,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_transform.js":29,"core-util-is":122,"inherits":44}],121:[function(_dereq_,module,exports){
+},{"./_stream_duplex":118,"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_transform.js":29,"core-util-is":122,"inherits":44}],121:[function(_dereq_,module,exports){
 module.exports=_dereq_(30)
-},{"./_stream_duplex":118,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_writable.js":30,"_process":24,"buffer":17,"core-util-is":122,"inherits":44,"stream":36}],122:[function(_dereq_,module,exports){
+},{"./_stream_duplex":118,"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/readable-stream/lib/_stream_writable.js":30,"_process":24,"buffer":17,"core-util-is":122,"inherits":44,"stream":36}],122:[function(_dereq_,module,exports){
 module.exports=_dereq_(31)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/node_modules/core-util-is/lib/util.js":31,"buffer":17}],123:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/readable-stream/node_modules/core-util-is/lib/util.js":31,"buffer":17}],123:[function(_dereq_,module,exports){
 module.exports=_dereq_(22)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/isarray/index.js":22}],124:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/isarray/index.js":22}],124:[function(_dereq_,module,exports){
 module.exports=_dereq_(37)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/string_decoder/index.js":37,"buffer":17}],125:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/string_decoder/index.js":37,"buffer":17}],125:[function(_dereq_,module,exports){
 module.exports=_dereq_(34)
-},{"./lib/_stream_transform.js":120,"/home/diana/Documents/Quipped/pouchdb/node_modules/browserify/node_modules/readable-stream/transform.js":34}],126:[function(_dereq_,module,exports){
+},{"./lib/_stream_transform.js":120,"/Users/dianacarrier/Documents/pouchdb/node_modules/browserify/node_modules/readable-stream/transform.js":34}],126:[function(_dereq_,module,exports){
 module.exports=_dereq_(54)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/has-keys.js":54}],127:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/level-js/node_modules/xtend/has-keys.js":54}],127:[function(_dereq_,module,exports){
 module.exports=_dereq_(55)
-},{"./has-keys":126,"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/index.js":55,"object-keys":129}],128:[function(_dereq_,module,exports){
+},{"./has-keys":126,"/Users/dianacarrier/Documents/pouchdb/node_modules/level-js/node_modules/xtend/index.js":55,"object-keys":129}],128:[function(_dereq_,module,exports){
 module.exports=_dereq_(56)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/foreach.js":56}],129:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/foreach.js":56}],129:[function(_dereq_,module,exports){
 module.exports=_dereq_(57)
-},{"./shim":131,"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/index.js":57}],130:[function(_dereq_,module,exports){
+},{"./shim":131,"/Users/dianacarrier/Documents/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/index.js":57}],130:[function(_dereq_,module,exports){
 module.exports=_dereq_(58)
-},{"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/isArguments.js":58}],131:[function(_dereq_,module,exports){
+},{"/Users/dianacarrier/Documents/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/isArguments.js":58}],131:[function(_dereq_,module,exports){
 module.exports=_dereq_(59)
-},{"./foreach":128,"./isArguments":130,"/home/diana/Documents/Quipped/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/shim.js":59}],132:[function(_dereq_,module,exports){
+},{"./foreach":128,"./isArguments":130,"/Users/dianacarrier/Documents/pouchdb/node_modules/level-js/node_modules/xtend/node_modules/object-keys/shim.js":59}],132:[function(_dereq_,module,exports){
 var Transform = _dereq_('readable-stream/transform')
   , inherits  = _dereq_('util').inherits
   , xtend     = _dereq_('xtend')
