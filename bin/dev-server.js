@@ -44,13 +44,15 @@ var w = watchify(browserify(indexfile, {
   standalone: "PouchDB",
   cache: {},
   packageCache: {},
-  fullPaths: true
+  fullPaths: true,
+  debug: true
 })).on('update', bundle);
 var b = watchify(browserify({
     entries: perfRoot,
     cache: {},
     packageCache: {},
-    fullPaths: true
+    fullPaths: true,
+    debug: true
   })).on('update', bundlePerfTests);
 
 function bundle(callback) {
@@ -93,6 +95,10 @@ var COUCH_HOST = process.env.COUCH_HOST || 'http://127.0.0.1:5984';
 
 var HTTP_PORT = 8000;
 var CORS_PORT = 2020;
+
+// if SERVER=sync-gateway we also have 
+// tests/misc/sync-gateway-config-server.js 
+// listening on port 8001
 
 var serversStarted;
 var readyCallback;

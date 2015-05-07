@@ -1,11 +1,13 @@
 Running PouchDB Tests
 --------------------------------------
 
-The PouchDB test suite expects an instance of CouchDB running in Admin Party on http://127.0.0.1:5984, you can configure this by sending the `COUCH_HOST` env var.
+The PouchDB test suite expects an instance of CouchDB running in [Admin Party](http://guide.couchdb.org/draft/security.html#party) on http://127.0.0.1:5984, you can configure this by sending the `COUCH_HOST` env var.
 
  * PouchDB has been primarily developed on Linux and OSX, if you are using Windows then these instructions will have problems, we would love your help fixing them though.
 
 ### Node Tests
+
+Given that you have [installed a CouchDB server](#installing-a-couchdb-server).
 
 Run all tests with:
 
@@ -57,29 +59,51 @@ or you can append it as `?es5shim=true` if you manually opened a browser window.
 
 ### Cordova tests
 
-You may need to install `ant` in order for the Android tests to run (e.g. `brew install ant`).
+You may need to install `ant` in order for the Android tests to run (e.g. `brew install ant`). You'll also need the Android SDK, and to make sure your `$ANDROID_HOME` is set.
 
-You will also need to run the dev test `npm run dev` simultaneously, so that
-the CORS server is available on port 2020.
+Run the tests against an iOS simulator:
 
     $ CLIENT=ios npm run cordova
-    $ CLIENT=android DEVICE=true npm run cordova. Also available: `CLIENT=firefoxos`.
+    
+Run the tests against a connected Android device, using the given COUCH_HOST    
+    
+    $ CLIENT=android DEVICE=true COUCH_HOST=http://example.com:5984
+
+Run the tests against the FirefoxOS simulator:
+
+    $ CLIENT=firefoxos npm run cordova
+
+Use a custom Couch host:
+
     $ COUCH_HOST=http://myurl:2020 npm run cordova
+
+Grep some tests:    
+
     $ GREP=basics npm run cordova
+    
+Test against the [SQLite Plugin](https://github.com/brodysoft/Cordova-SQLitePlugin):
+
     $ SQLITE_PLUGIN=true ADAPTERS=websql npm run cordova
 
+**Notes:**
+
 * `CLIENT=ios` will run on iOS, default is `CLIENT=android`
-* `DEVICE=true` will run on a device connected via USB, else on an emulator
-* `SQLITE_PLUGIN=true` will install and use the [SQLite Plugin](https://github.com/brodysoft/Cordova-SQLitePlugin) in lieu of the `'websql'` adapter.
-* `ADAPTERS=websql` should be used if you want to skip using IndexedDB on Android 4.4+ and iOS 8+.
+* `DEVICE=true` will run on a device connected via USB, else on an emulator (default is the emulator)
+* `SQLITE_PLUGIN=true` will install and use the [SQLite Plugin](https://github.com/brodysoft/Cordova-SQLitePlugin).
+* `ADAPTERS=websql` should be used if you want to skip using IndexedDB on Android 4.4+ or if you want to force the SQLite Plugin.
 * `COUCH_HOST` should be the full URL; you can only omit this is in the Android emulator due to the magic `10.0.2.2` route to `localhost`.
 * `ES5_SHIM=true` should be used on devices that don't support ES5 (e.g. Android 2.x).
+
+**WEINRE debugging:**
 
 You can also debug with Weinre by doing:
 
     $ npm install -g weinre
     $ weinre --boundHost=0.0.0.0
-    $ WEINRE_HOST=http://route.to.my.weinre:8080
+    
+Then run the tests with:
+
+    $ WEINRE_HOST=http://route.to.my.weinre:8080 npm run cordova
 
 ### Testing against PouchDB server
 
@@ -185,3 +209,25 @@ Or even make the `preferredAdapters` list any crazy thing you want:
     http://localhost:8000/tests/test.html?adapters=websql,memory,idb,localstorage
 
 Keep in mind that `preferredAdapters` only applies to non-http, non-https adapters.
+
+### Installing a CouchDB server
+
+Regular install
+---------------------------
+
+See the [official CouchDB documentation](http://docs.couchdb.org/en/1.6.1/install/index.html) for a guide on how to install CouchDB.
+
+Docker install
+-----------------------------
+
+Don't have a CouchDB installed on your machine? Don't want one? Let's use [docker](https://www.docker.com/)
+and [fig](http://www.fig.sh/).
+
+1. [Install Docker](https://docs.docker.com/installation/#installation)
+2. [Install Fig](http://www.fig.sh/install.html)
+3. Run `fig -f tests/misc/fig.yml up -d` from PouchDB project root folder to download and run a CouchDB server in docker
+4. Check with `fig -f tests/misc/fig.yml ps` that `couchdb` is running and listen on `0.0.0.0:15984`
+5. Run the test suite with: `COUCH_HOST=http://127.0.0.1:15984 npm test`
+
+Now everytime you want to run the test suite, you just need to:
+    $ fig -f tests/misc/fig.yml start
